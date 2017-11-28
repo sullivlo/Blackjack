@@ -1,9 +1,20 @@
 ## Blackjack
+
+     user clicks connect to server
+          ToDo: change key word search button to a 'ready to play' button 
+               game will start when all conneced users are 'ready to play'
+               
+     user clicks 'Hold' button
+          ToDo: End of user turn when user has gone over 21, got 21 or clicks 'hold"
+     
+     ToDo: Host.class will be a player
+           CentralServer will be the dealer 
+           GUI will handle connect to CentralServer, ready to play, hit, and hold 
 ### Per to per blackjack game. A user can connect with friends to play blackjack over at tcp connection. 
 
-
+     
      Create and shuffle a deck of cards
-         Create two BlackjackHands, userHand and dealerHand
+         Create multiple BlackjackHands, userHand1 to userHandN and dealerHand
          Deal two cards into each hand
          if dealer has blackjack
              User loses and the game ends now
