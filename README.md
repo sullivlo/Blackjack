@@ -1,8 +1,20 @@
 ## Blackjack
 
-     user clicks connect to server
-          ToDo: change key word search button to a 'ready to play' button 
-               game will start when all conneced users are 'ready to play'
+     ### user clicks connect to server
+          ToDo: Button Connect
+     Games that are avaible shown on textfeild
+          ToDo: Connect to new peer 
+     The house becomes the player waiting for a connections
+          A player connects to another player
+          
+          
+     
+     
+     
+     
+     
+     ToDo: change key word search button to a 'ready to play' button 
+          game will start when all conneced users are 'ready to play'
                
      user clicks 'Hold' button
           ToDo: End of user turn when user has gone over 21, got 21 or clicks 'hold"
