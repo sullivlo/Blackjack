@@ -98,8 +98,8 @@ X Button (On header)
 - Sends Disconnect message to other user
 - Terminates the entire program
 
-
-——————————————————————————
+--------------------------
 Tomorrow:
 - Convert retro function to send/display cards.
 - General game logic
+     (When card is taken from deck, remove it from ArrayList. When ArrayList is empty, create a new deck.)
