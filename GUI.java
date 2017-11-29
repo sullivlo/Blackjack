@@ -27,6 +27,7 @@ import java.io.*;
 /* For tokens */
 import java.util.*;
 import javax.swing.JTextArea;
+import javax.swing.JTable;
 
 public class GUI {
 
@@ -43,7 +44,7 @@ public class GUI {
 	private String portNum = "";
 	
 	private Host host = new Host();
-	private HostServer hostServer;
+	private DealerServer hostServer;
 	private Socket controlSocket;
 	private boolean isConnectedToOtherHost = false;
 	
@@ -59,6 +60,7 @@ public class GUI {
 	private boolean alreadySetupFTPServer = false;
 	/* Holds the condition of whether connected to the Central-Server */
 	private boolean isConnectedToCentralServer = false;
+	private JTable table;
 
 	/**
 	 * Launch the application.
@@ -157,7 +159,7 @@ public class GUI {
 			             This allows for the GUI to act separately from the
 			             actions of the FTP part of the client 
 			            */
-			            hostServer = new HostServer();
+			            hostServer = new DealerServer();
 			            hostFTPWelcomeport = hostServer.getFTPWelcomePort();
 			            
 			            /* For debugging */
@@ -286,11 +288,6 @@ public class GUI {
 		frame.getContentPane().add(panelSearch);
 		panelSearch.setLayout(null);
 		
-		TextArea keywordSearchArea = new TextArea();
-		keywordSearchArea.setEditable(false);
-		keywordSearchArea.setBounds(10, 37, 395, 157);
-		panelSearch.add(keywordSearchArea);
-		
 		JButton btnReady = new JButton("Ready to play");
 		btnReady.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -316,11 +313,7 @@ public class GUI {
 			            
 				    //String messageToPrint = returnedFileData.replaceAll("*", "\n");
 
-				    /* For debugging */
-				    keywordSearchArea.setText( returnedFileData );
-				    
-				    /* For initial textarea */
-				    keywordSearchArea.setText("");
+				   
 				    
 				    String stringForTextArea = "";
 				    
@@ -344,13 +337,13 @@ public class GUI {
 				    if (firstToken.equals("ERROR")) {
 					System.out.println("  DEBUG-10: Error in parsing the returned string!");              
 					/* Print in GUI "There was an error, try again..." */
-					keywordSearchArea.setText("There was an error...");
+					
 				    }
 				    else if (firstToken.equals("NOFOUNDMATCHES")) {
 					System.out.println("  DEBUG-11: No found matches!");
 				    
 					/* Print in GUI "no matches" */
-					keywordSearchArea.setText("No Found Matches...");
+					
 				    }
 				    else if (firstToken.equals("FILE")) {
 					    /* 
@@ -399,7 +392,6 @@ public class GUI {
 					    }
 					
 					    stringForTextArea = stringForTextArea + "End of search list.";
-					    keywordSearchArea.setText(stringForTextArea);
 				        }
 			        }
 			        else {
@@ -416,9 +408,9 @@ public class GUI {
 			}
 		});
 		
-		JButton btnHold = new JButton("Hold");
-		btnHold.setBounds(73, 204, 100, 20);
-		panelSearch.add(btnHold);
+		JButton btnHit = new JButton("Hit");
+		btnHit.setBounds(73, 204, 100, 20);
+		panelSearch.add(btnHit);
 		
 		JButton btnStay = new JButton("Stay");
 		btnStay.setBounds(240, 204, 100, 20);
@@ -426,6 +418,10 @@ public class GUI {
 		btnReady.setBounds(86, 12, 244, 19);
 		btnReady.setFont(new Font("Dialog", Font.BOLD | Font.ITALIC, 12));
 		panelSearch.add(btnReady);
+		
+		table = new JTable();
+		table.setBounds(12, 175, 285, -125);
+		panelSearch.add(table);
 		
 		JPanel panelFTP = new JPanel();
 		panelFTP.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
