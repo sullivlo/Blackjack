@@ -30,14 +30,15 @@ import java.util.*;
 import javax.swing.JTextArea;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
+import javax.swing.UIManager;
 
 public class GUIClient {
 
 	private JFrame frmPlaya;
 
 	private String commandHistory = "";
-	private String ipAddress = "";
-	private String portNum = "";
+	private String ipAddress = "127.0.0.1";
+	private String portNum = "1235";
 
 	public ArrayList<Card> deck = Card.setDeck();
 	public Card[] hand = new Card[6];
@@ -105,6 +106,7 @@ public class GUIClient {
 		JLabel lblYourePlaying = new JLabel("You are playing:");
 		lblYourePlaying.setBounds(12, 34, 121, 15);
 		frmPlaya.getContentPane().add(lblYourePlaying);
+		frmPlaya.getContentPane().setBackground(UIManager.getColor("CheckBoxMenuItem.acceleratorForeground"));
 
 		JLabel lbBlackJackTitle = new JLabel("Black Jack");
 		lbBlackJackTitle.setBounds(12, 12, 196, 15);
@@ -158,7 +160,7 @@ public class GUIClient {
 				int dataPort = 1240;
 				int recvMsgSize;
 
-				String toSend = "retr" + dataPort;
+				String toSend = "retr " + dataPort;
 
 				outToHost.println(toSend);
 				outToHost.flush();
@@ -262,22 +264,6 @@ public class GUIClient {
 		lbYourCards.setBounds(12, 12, 121, 15);
 		panelGUIgameYours.add(lbYourCards);
 
-		JButton btDisconnect = new JButton("Disconnect");
-		btDisconnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				/* For debugging */
-				// System.out.println(" DEBUG: Inside quit function.");
-
-				if (isConnectedToOtherHost != false) {
-					disconnect();
-				} else {
-					System.out.println("Not connected to host.");
-				}
-			}
-		});
-		btDisconnect.setBounds(285, 540, 127, 34);
-		frmPlaya.getContentPane().add(btDisconnect);
-
 		JLabel lblLosses = new JLabel("Losses");
 		lblLosses.setBounds(12, 532, 64, 15);
 		frmPlaya.getContentPane().add(lblLosses);
@@ -299,6 +285,59 @@ public class GUIClient {
 		tfLosses.setBounds(94, 530, 114, 19);
 		frmPlaya.getContentPane().add(tfLosses);
 		tfLosses.setText("" + losses);
+		
+		JButton btConnect = new JButton("Connect");
+		btConnect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				/**
+				 * Connect from playa to dealer
+				 */
+
+						
+				/* Connect to other user's HostServer */
+				try {
+					connect(ipAddress, portNum);
+					btConnect.setEnabled(false);
+
+					do {
+						/*
+						 * Create a thread to handle communication with this client and pass the
+						 * constructor for this thread a reference to the relevant socket and user IP.
+						 */
+						FTPClientHandler handler = new FTPClientHandler(controlSocket);
+
+						/* Start a new thread for this client */
+						handler.start();
+					} while (isConnectedToOtherHost == false);	
+					
+				}
+				catch (Exception q) {
+					System.out.println("ERROR: Failed to " 
+					+ "connect to server!");
+				}
+				
+			}
+		});
+		btConnect.setBounds(269, 29, 127, 34);
+		frmPlaya.getContentPane().add(btConnect);
+		
+		JButton btDisconnect = new JButton("Disconnect");
+		btDisconnect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				/* For debugging */
+				// System.out.println(" DEBUG: Inside quit function.");
+
+				if (isConnectedToOtherHost != false) {
+					disconnect();
+					btConnect.setEnabled(true);
+				} else {
+					System.out.println("Not connected to host.");
+					btConnect.setEnabled(true);
+				}
+			}
+		});
+		btDisconnect.setBounds(285, 540, 127, 34);
+		frmPlaya.getContentPane().add(btDisconnect);
 	}
 
 	private void disconnect() {
@@ -313,4 +352,38 @@ public class GUIClient {
 		
 		frmPlaya.dispose();
 	}
+
+	/*********************************************************************
+	* Connect is intended to set up a connection between host A and host B.
+	**********************************************************************/
+	private void connect(String ipAddress, String portNum){
+	
+		 /* Connect to server's welcome socket */
+                try { 
+                    controlSocket = new Socket("127.0.0.1",   //using hardcoded ipAdress 
+                                         Integer.parseInt("1235"));  //using hardcoded portNum
+                    boolean controlSocketOpen = true;
+                }catch(Exception p){
+                    System.out.println("ERROR: Did not find socket!");
+                }
+                                    
+                // Set-up the control-stream,
+                // if there's an error, report the non-connection.
+                try {
+                    inFromHost = 
+                       new Scanner(controlSocket.getInputStream());
+                    outToHost = 
+                       new PrintWriter(controlSocket.getOutputStream());
+                    isConnectedToOtherHost = true;
+                    System.out.println("Connected to client!");
+                    System.out.println(" ");
+                }
+                catch (Exception e) {
+                    System.out.println("ERROR: Did not connect to " +
+                        "client!");
+                    isConnectedToOtherHost = false;
+		}
+	}
+
+	
 }

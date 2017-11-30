@@ -251,6 +251,7 @@ class FTPClientHandler extends Thread {
 					outToClient = null;
 					remoteIP = "";
 					System.out.println("Disconnected!");
+					
 				} catch (Exception e) {
 					System.out.println("  ERROR: Closing connection error");
 				}

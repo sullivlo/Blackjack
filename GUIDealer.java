@@ -17,6 +17,8 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIManager;
+
 import java.awt.Scrollbar;
 import java.awt.TextArea;
 import java.awt.event.ActionListener;
@@ -38,6 +40,7 @@ public class GUIDealer {
 	private String commandHistory = "";
 	private String ipAddress = "";
 	private String portNum = "";
+	private Card card;
 
 	public ArrayList<Card> deck = Card.setDeck();
 	public Card[] hand = new Card[6];
@@ -47,16 +50,20 @@ public class GUIDealer {
 	public int wins = 0;
 	public int losses = 0;
 
+	private String dealerHandString = "";
+
+	private boolean isConnected = false;
+
 	private Host host = new Host();
 	private DealerServer hostServer;
 	private Socket controlSocket;
-	private boolean isConnectedToOtherHost = false;
+	private boolean isConnectedToOtherClient = false;
 
 	/* This handles the control-line out stream */
-	PrintWriter outToHost = null;
+	PrintWriter outToClient = null;
 
 	/* This handles the control-line in stream */
-	Scanner inFromHost = null;
+	Scanner inFromClient = null;
 
 	/* This is used as a helper in initial connection to Central-Server */
 	private String hostFTPWelcomeport;
@@ -101,6 +108,7 @@ public class GUIDealer {
 		frmDealer.setBounds(100, 100, 451, 628);
 		frmDealer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmDealer.getContentPane().setLayout(null);
+		frmDealer.getContentPane().setBackground(UIManager.getColor("CheckBoxMenuItem.acceleratorForeground"));
 
 		JLabel lblYourePlaying = new JLabel("You are playing:");
 		lblYourePlaying.setBounds(12, 34, 121, 15);
@@ -160,8 +168,8 @@ public class GUIDealer {
 
 				String toSend = "retr" + dataPort;
 
-				//outToHost.println(toSend);
-				//outToHost.flush();
+				// outToHost.println(toSend);
+				// outToHost.flush();
 
 				Socket dataConnection = null;
 
@@ -173,56 +181,56 @@ public class GUIDealer {
 
 					InputStream inFromServer_Data = dataConnection.getInputStream();
 
-					//while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
-						try {
-							/* On listening port */
-							Card card = new Card();
-							
-							card = deck.get(0);
-							deck.remove(0);
+					// while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
+					try {
+						/* On listening port */
+						Card card = new Card();
 
-							hand[handSize] = card;
-							handSize++;
-							tfLosses.setText("[" + card.name + ", " + card.suit);
-							if (handSize > 6) {
-								// Update game state to win for player
-								wins++;
-								tfWins.setText("" + wins);
-								/*
-								 * Send message to the other guy that he lost and to increment his loss counter.
-								 */
-								toSend = "loss" + dataPort;
+						card = deck.get(0);
+						deck.remove(0);
 
-								outToHost.println(toSend);
-								outToHost.flush();
-							}
+						hand[handSize] = card;
+						handSize++;
+						tfLosses.setText("[" + card.name + ", " + card.suit);
+						if (handSize > 6) {
+							// Update game state to win for player
+							wins++;
+							tfWins.setText("" + wins);
+							/*
+							 * Send message to the other guy that he lost and to increment his loss counter.
+							 */
+							toSend = "loss" + dataPort;
 
-							/* Ace check */
-							if (card.suit == "Ace") {
-								if (handValue >= 11) {
-									card.value = 1;
-								} else {
-									card.value = 11;
-								}
-							}
-
-							handValue = handValue + card.value;
-							if (handValue > 21) {
-								// Update gameState to lose for player
-								losses++;
-								tfLosses.setText("" + losses);
-								/*
-								 * Send message to the other guy that he won and to increment his win counter.
-								 */
-								toSend = "win" + dataPort;
-
-								outToHost.println(toSend);
-								outToHost.flush();
-							}
-						} catch (Exception f) {
-							System.out.println("Error trying to get card.");
+							outToClient.println(toSend);
+							outToClient.flush();
 						}
-					//}
+
+						/* Ace check */
+						if (card.suit == "Ace") {
+							if (handValue >= 11) {
+								card.value = 1;
+							} else {
+								card.value = 11;
+							}
+						}
+
+						handValue = handValue + card.value;
+						if (handValue > 21) {
+							// Update gameState to lose for player
+							losses++;
+							tfLosses.setText("" + losses);
+							/*
+							 * Send message to the other guy that he won and to increment his win counter.
+							 */
+							toSend = "win" + dataPort;
+
+							outToClient.println(toSend);
+							outToClient.flush();
+						}
+					} catch (Exception f) {
+						System.out.println("Error trying to get card.");
+					}
+					// }
 
 				} catch (Exception f) {
 					System.out.println("Error trying to " + "retrieve file.");
@@ -243,10 +251,6 @@ public class GUIDealer {
 
 				// Sends message to host for them to take their turn
 
-				
-				
-				
-				
 			}
 		});
 		btStay.setBounds(122, 204, 100, 20);
@@ -262,6 +266,18 @@ public class GUIDealer {
 		panelGUIgameYours.add(lbYourCards);
 
 		JButton btDisconnect = new JButton("Disconnect");
+		btDisconnect.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				/* For debugging */
+				// System.out.println(" DEBUG: Inside quit function.");
+
+				if (isConnectedToOtherClient != false) {
+					disconnect();
+				} else {
+					System.out.println("Not connected to host.");
+				}
+			}
+		});
 		btDisconnect.setBounds(285, 540, 127, 34);
 		frmDealer.getContentPane().add(btDisconnect);
 
@@ -278,24 +294,107 @@ public class GUIDealer {
 		tfWins.setColumns(10);
 		tfWins.setBounds(94, 555, 114, 19);
 		frmDealer.getContentPane().add(tfWins);
+		tfWins.setText("" + wins);
 
 		tfLosses = new JTextField();
 		tfLosses.setEditable(false);
 		tfLosses.setColumns(10);
 		tfLosses.setBounds(94, 530, 114, 19);
 		frmDealer.getContentPane().add(tfLosses);
+		tfLosses.setText("" + losses);
+
+		JButton btnReadyForPlayer = new JButton("Ready for player");
+		btnReadyForPlayer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				/* Perform a loop to wait for new connections */
+
+				try {
+
+					ServerSocket welcomeSocket = new ServerSocket(1235);
+
+					do {
+						/* Wait for client... */
+						Socket connectionSocket = welcomeSocket.accept();
+
+						/* Display to terminal when new client connects */
+						System.out.println("\nClient-As-FTP-Server: New Client Connected!");
+						isConnected = true;
+
+						/* For debugging */
+						// System.out.println(" DEBUG: New Connection's IP: " +
+						// connectionSocket.getInetAddress());
+
+						/*
+						 * Create a thread to handle communication with this client and pass the
+						 * constructor for this thread a reference to the relevant socket and user IP.
+						 */
+						FTPClientHandler handler = new FTPClientHandler(connectionSocket);
+
+						inFromClient = new Scanner(connectionSocket.getInputStream());
+						outToClient = new PrintWriter(connectionSocket.getOutputStream());
+
+						/**
+						 * Game logic draw two cards for GUIClient
+						 * 
+						 * display second guiClients card on GuiDialers opponents textfield
+						 * 
+						 * Game logic draw two cards for GUIDealer display GUIdealers card in your cards
+						 * textfeild
+						 * 
+						 * send GUIClients their two cards + faceup GuiDealers card
+						 * 
+						 * 
+						 */
+
+						/* Start a new thread for this client */
+						handler.start();
+						
+						
+						
+					} while (isConnected == false);
+					isConnectedToOtherClient = true;
+
+					for (int i = 0; i < 2; i++) {
+						
+						/* On listening port */
+						card = new Card();
+						
+						card = deck.get(0);
+						
+						deck.remove(0);
+
+						hand[handSize] = card;
+						//handSize++;
+						dealerHandString = dealerHandString + "[" + card.name + " " + card.suit + "]\t";
+						
+
+						
+						//handValue = handValue + card.value;
+					}	
+					textAreaYourCards.setText(dealerHandString);
+					
+					
+				} catch (Exception f) {
+					isConnected = false;
+					System.out.println("ERROR: Failure in setting up a " + "new thread.");
+				}
+			}
+		});
+		btnReadyForPlayer.setBounds(255, 24, 165, 34);
+		frmDealer.getContentPane().add(btnReadyForPlayer);
 	}
 
-	
-
 	private void disconnect() {
-		/* Disconnect from server's welcome socket */
-		outToHost.println("quit");
-		outToHost.flush();
 
-		boolean controlSocketOpen = false;
-		inFromHost.close();
-		outToHost.close();
-		isConnectedToOtherHost = false;
+		/* Disconnect from server's welcome socket */
+		outToClient.println("quit");
+		outToClient.flush();
+
+		inFromClient.close();
+		outToClient.close();
+		isConnectedToOtherClient = false;
+
+		frmDealer.dispose();
 	}
 }
