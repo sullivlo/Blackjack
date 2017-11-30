@@ -103,3 +103,4 @@ Tomorrow:
 - Convert retro function to send/display cards.
 - General game logic
      (When card is taken from deck, remove it from ArrayList. When ArrayList is empty, create a new deck.)
+- Implement hit function and send cards to client on game start
