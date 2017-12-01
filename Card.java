@@ -8,7 +8,7 @@ public class Card {
 	public String name;
 
 	public static ArrayList<Card> setDeck() {
-		String[] suits = { "Clubs", "Diamond", "Heart", "Spades" };
+		String[] suits = { "Clubs", "Diamonds", "Hearts", "Spades" };
 		String[] names = { "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen",
 				"King", "Ace" };
 

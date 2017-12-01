@@ -39,14 +39,26 @@ public class GUIClient {
 	private String commandHistory = "";
 	private String ipAddress = "127.0.0.1";
 	private String portNum = "1235";
+	private Card card;
+	public int numberOf11s = 0;
 
 	public ArrayList<Card> deck = Card.setDeck();
 	public Card[] hand = new Card[6];
-	public int handSize = 2;
+	public int handSize = 0;
 	public int handValue = 0;
 
 	public int wins = 0;
 	public int losses = 0;
+	
+	public boolean turnEnded = false;
+
+	private String dealerHandString = "";
+	private String toSend = "";
+
+	public int dataPort = 1240;
+
+	private boolean isConnected = false;
+	public boolean gameActive = false;
 
 	private Host host = new Host();
 	private DealerServer hostServer;
@@ -169,13 +181,13 @@ public class GUIClient {
 
 				try {
 					/* Connect to server and establish variables */
-					dataListen = new ServerSocket(dataPort);
+					//dataListen = new ServerSocket(dataPort);
 
-					dataConnection = dataListen.accept();
+					//dataConnection = dataListen.accept();
 
-					InputStream inFromServer_Data = dataConnection.getInputStream();
+					//InputStream inFromServer_Data = dataConnection.getInputStream();
 
-					while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
+					//while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
 						try {
 							/* On listening port */
 							Card card = new Card();
@@ -229,7 +241,7 @@ public class GUIClient {
 						} catch (Exception f) {
 							System.out.println("Error trying to get card.");
 						}
-					}
+					//}
 
 				} catch (Exception f) {
 					System.out.println("Error trying to " + "retrieve card.");

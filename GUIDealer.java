@@ -41,18 +41,26 @@ public class GUIDealer {
 	private String ipAddress = "";
 	private String portNum = "";
 	private Card card;
+	public int numberOf11s = 0;
 
 	public ArrayList<Card> deck = Card.setDeck();
 	public Card[] hand = new Card[6];
-	public int handSize = 2;
+	public Card[] playerHand = new Card[6];
+	public int handSize = 0;
 	public int handValue = 0;
 
 	public int wins = 0;
 	public int losses = 0;
+	
+	public boolean turnEnded = false;
 
 	private String dealerHandString = "";
+	private String toSend = "";
+
+	public int dataPort = 1240;
 
 	private boolean isConnected = false;
+	public boolean gameActive = false;
 
 	private Host host = new Host();
 	private DealerServer hostServer;
@@ -145,6 +153,11 @@ public class GUIDealer {
 		panelGUIgameYours.setBounds(12, 291, 415, 229);
 		frmDealer.getContentPane().add(panelGUIgameYours);
 
+		TextArea textAreaYourCards = new TextArea();
+		textAreaYourCards.setEditable(false);
+		textAreaYourCards.setBounds(10, 33, 395, 157);
+		panelGUIgameYours.add(textAreaYourCards);
+
 		/**
 		 * retrieve card from host dealer
 		 */
@@ -163,10 +176,10 @@ public class GUIDealer {
 				ServerSocket dataListen;
 				String ipAddress = "";
 				/** The port number to send files across */
-				int dataPort = 1240;
+				dataPort = 1240;
 				int recvMsgSize;
 
-				String toSend = "retr" + dataPort;
+				toSend = "retr" + dataPort;
 
 				// outToHost.println(toSend);
 				// outToHost.flush();
@@ -175,57 +188,159 @@ public class GUIDealer {
 
 				try {
 					/* Connect to server and establish variables */
-					dataListen = new ServerSocket(dataPort);
+					// dataListen = new ServerSocket(dataPort);
 
-					dataConnection = dataListen.accept();
+					// System.out.println("Freeze happens here");
+					// dataConnection = dataListen.accept();
 
-					InputStream inFromServer_Data = dataConnection.getInputStream();
+					// System.out.println("We made it");
+					// InputStream inFromServer_Data = dataConnection.getInputStream();
 
 					// while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
+
+					boolean draw21 = false;
 					try {
-						/* On listening port */
-						Card card = new Card();
+						if (gameActive == true) {
+							/* On listening port */
+							Card card = new Card();
 
-						card = deck.get(0);
-						deck.remove(0);
+							card = deck.get(0);
+							deck.remove(0);
 
-						hand[handSize] = card;
-						handSize++;
-						tfLosses.setText("[" + card.name + ", " + card.suit);
-						if (handSize > 6) {
-							// Update game state to win for player
-							wins++;
-							tfWins.setText("" + wins);
-							/*
-							 * Send message to the other guy that he lost and to increment his loss counter.
-							 */
-							toSend = "loss" + dataPort;
+							hand[handSize] = card;
+							handSize++;
 
-							outToClient.println(toSend);
-							outToClient.flush();
-						}
+							dealerHandString = dealerHandString + "[" + card.name + " of " + card.suit + "]\n";
 
-						/* Ace check */
-						if (card.suit == "Ace") {
-							if (handValue >= 11) {
-								card.value = 1;
-							} else {
-								card.value = 11;
+							if (handSize > 6) {
+								// Update game state to win for player
+								wins++;
+								tfWins.setText("" + wins);
+								/*
+								 * Send message to the other guy that he lost and to increment his loss counter.
+								 */
+								toSend = "loss " + dataPort;
+
+								outToClient.println(toSend);
+								outToClient.flush();
+								gameActive = false;
+								numberOf11s = 0;
 							}
-						}
 
-						handValue = handValue + card.value;
-						if (handValue > 21) {
-							// Update gameState to lose for player
-							losses++;
-							tfLosses.setText("" + losses);
-							/*
-							 * Send message to the other guy that he won and to increment his win counter.
-							 */
-							toSend = "win" + dataPort;
+							/* Ace check */
+							if (card.name.equals("Ace")) {
+								if (handValue >= 11) {
+									card.value = 1;
+								} else {
+									card.value = 11;
+									numberOf11s = numberOf11s + 1;
+								}
+							}
 
-							outToClient.println(toSend);
-							outToClient.flush();
+							handValue = handValue + card.value;
+
+							if (handValue > 21) {
+								if (numberOf11s != 0) {
+									handValue = handValue - 10;
+									numberOf11s--;
+								} else {
+									// Update gameState to lose for player
+									losses++;
+									tfLosses.setText("" + losses);
+									/*
+									 * Send message to the other guy that he won and to increment his win counter.
+									 */
+									toSend = "win " + dataPort;
+
+									outToClient.println(toSend);
+									outToClient.flush();
+									gameActive = false;
+									numberOf11s = 0;
+								}
+							} else if (handValue == 21) {
+								// Update game state to win for player
+								wins++;
+								tfWins.setText("" + wins);
+								/*
+								 * Send message to the other guy that he lost and to increment his loss counter.
+								 */
+								toSend = "loss " + dataPort;
+
+								outToClient.println(toSend);
+								outToClient.flush();
+								gameActive = false;
+								numberOf11s = 0;
+							}
+
+							// dealerHandString = dealerHandString + "\n\nNumber of cards: " + handSize +
+							// "\nValue: " + handValue;
+							textAreaYourCards.setText(dealerHandString);
+
+							String debugString = "Number of cards: " + handSize + "\nValue: " + handValue
+									+ "\nNum of 11s: " + numberOf11s;
+							textAreaOpponentsCards.setText(debugString);
+
+							if (gameActive == false) {
+								dealerHandString = "";
+							}
+						} else {
+							deck = Card.setDeck();
+							hand = new Card[6];
+							handSize = 0;
+							handValue = 0;
+
+							for (int i = 0; i < 2; i++) {
+
+								/* On listening port */
+								card = new Card();
+
+								card = deck.get(0);
+
+								deck.remove(0);
+
+								hand[handSize] = card;
+								handSize++;
+								dealerHandString = dealerHandString + "[" + card.name + " of " + card.suit + "]\n";
+
+								/* Ace check */
+								if (card.name.equals("Ace")) {
+									if (handValue >= 11) {
+										card.value = 1;
+									} else {
+										card.value = 11;
+										numberOf11s++;
+									}
+								}
+
+								handValue = handValue + card.value;
+
+								if (handValue == 21) {
+									// Update game state to win for player
+									wins++;
+									tfWins.setText("" + wins);
+									/*
+									 * Send message to the other guy that he lost and to increment his loss counter.
+									 */
+									toSend = "loss " + dataPort;
+
+									outToClient.println(toSend);
+									outToClient.flush();
+									draw21 = true;
+								}
+							}
+							// dealerHandString = dealerHandString + "\nNumber of cards: " + handSize +
+							// "\nValue: " + handValue;
+							textAreaYourCards.setText(dealerHandString);
+							String debugString = "Number of cards: " + handSize + "\nValue: " + handValue
+									+ "\nNum of 11s: " + numberOf11s;
+							textAreaOpponentsCards.setText(debugString);
+							if (draw21 == true) {
+								dealerHandString = "";
+								draw21 = false;
+								numberOf11s = 0;
+							} else {
+								gameActive = true;
+							}
 						}
 					} catch (Exception f) {
 						System.out.println("Error trying to get card.");
@@ -233,7 +348,7 @@ public class GUIDealer {
 					// }
 
 				} catch (Exception f) {
-					System.out.println("Error trying to " + "retrieve file.");
+					System.out.println("Error trying to retrieve file.");
 				}
 			}
 		});
@@ -244,22 +359,27 @@ public class GUIDealer {
 		btStay.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// Disables hit/stay buttons
-				btStay.setEnabled(false);
-				btHit.setEnabled(false);
 
 				// Sets turnEnded to 1
 
 				// Sends message to host for them to take their turn
 
+				if (isConnectedToOtherClient != false) {
+					// Disables hit/stay buttons
+					btStay.setEnabled(false);
+					btHit.setEnabled(false);
+					
+					outToClient.println("stay");
+					outToClient.flush();
+					
+				} else {
+					System.out.println("Not connected to host.");
+				}
+				
 			}
 		});
 		btStay.setBounds(122, 204, 100, 20);
 		panelGUIgameYours.add(btStay);
-
-		TextArea textAreaYourCards = new TextArea();
-		textAreaYourCards.setEditable(false);
-		textAreaYourCards.setBounds(10, 33, 395, 157);
-		panelGUIgameYours.add(textAreaYourCards);
 
 		JLabel lbYourCards = new JLabel("Your Cards:");
 		lbYourCards.setBounds(12, 12, 121, 15);
@@ -349,32 +469,70 @@ public class GUIDealer {
 
 						/* Start a new thread for this client */
 						handler.start();
-						
-						
-						
+
 					} while (isConnected == false);
 					isConnectedToOtherClient = true;
 
 					for (int i = 0; i < 2; i++) {
-						
+
 						/* On listening port */
 						card = new Card();
-						
+
 						card = deck.get(0);
-						
+
 						deck.remove(0);
 
 						hand[handSize] = card;
-						//handSize++;
-						dealerHandString = dealerHandString + "[" + card.name + " " + card.suit + "]\t";
-						
+						handSize++;
+						dealerHandString = dealerHandString + "[" + card.name + " of " + card.suit + "]\n";
 
-						
-						//handValue = handValue + card.value;
-					}	
+						/* Ace check */
+						if (card.name.equals("Ace")) {
+							if (handValue >= 11) {
+								card.value = 1;
+							} else {
+								card.value = 11;
+								numberOf11s++;
+							}
+						}
+
+						handValue = handValue + card.value;
+					}
+					// dealerHandString = dealerHandString + "\nNumber of cards: " + handSize +
+					// "\nValue: " + handValue;
 					textAreaYourCards.setText(dealerHandString);
+					String debugString = "Number of cards: " + handSize + "\nValue: " + handValue
+							+ "\nNum of 11s: " + numberOf11s;
+					textAreaOpponentsCards.setText(debugString);
+					gameActive = true;
+
+					if (handValue == 21) {
+						// Update game state to win for player
+						wins++;
+						tfWins.setText("" + wins);
+						/*
+						 * Send message to the other guy that he lost and to increment his loss counter.
+						 */
+						toSend = "loss " + dataPort;
+
+						outToClient.println(toSend);
+						outToClient.flush();
+						gameActive = false;
+						dealerHandString = "";
+					}
 					
-					
+					for (int i = 0; i < 2; i++) {
+
+						/* On listening port */
+						card = new Card();
+
+						card = deck.get(0);
+						deck.remove(0);
+
+						//outToClient.println(card.name + " " + card.suit);
+						//outToClient.flush();
+					}
+
 				} catch (Exception f) {
 					isConnected = false;
 					System.out.println("ERROR: Failure in setting up a " + "new thread.");
