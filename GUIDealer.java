@@ -42,19 +42,23 @@ public class GUIDealer {
 	private String portNum = "";
 	private Card card;
 	public int numberOf11s = 0;
+	public int oppNumberOf11s = 0;
 
 	public ArrayList<Card> deck = Card.setDeck();
 	public Card[] hand = new Card[6];
-	public Card[] playerHand = new Card[6];
+	public Card[] opponentHand = new Card[6];
+	public int oppHandSize = 0;
 	public int handSize = 0;
 	public int handValue = 0;
+	public int oppHandValue = 0;
 
 	public int wins = 0;
 	public int losses = 0;
-	
+
 	public boolean turnEnded = false;
 
 	private String dealerHandString = "";
+	private String playerHandString = "";
 	private String toSend = "";
 
 	public int dataPort = 1240;
@@ -158,10 +162,33 @@ public class GUIDealer {
 		textAreaYourCards.setBounds(10, 33, 395, 157);
 		panelGUIgameYours.add(textAreaYourCards);
 
+		JButton btNewHand = new JButton("New Hand");
+		JButton btHit = new JButton("Hit");
+
+		JButton btStay = new JButton("Stay");
+		btStay.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (isConnectedToOtherClient != false) {
+					// Disables hit/stay buttons
+					btStay.setEnabled(false);
+					btHit.setEnabled(false);
+
+					outToClient.println("stay");
+					outToClient.flush();
+
+				} else {
+					System.out.println("Not connected to host.");
+				}
+
+			}
+		});
+		btStay.setBounds(122, 204, 100, 20);
+		panelGUIgameYours.add(btStay);
+
 		/**
 		 * retrieve card from host dealer
 		 */
-		JButton btHit = new JButton("Hit");
+
 		btHit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
@@ -198,7 +225,6 @@ public class GUIDealer {
 
 					// while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
 
-					boolean draw21 = false;
 					try {
 						if (gameActive == true) {
 							/* On listening port */
@@ -276,70 +302,14 @@ public class GUIDealer {
 							// "\nValue: " + handValue;
 							textAreaYourCards.setText(dealerHandString);
 
-							String debugString = "Number of cards: " + handSize + "\nValue: " + handValue
-									+ "\nNum of 11s: " + numberOf11s;
-							textAreaOpponentsCards.setText(debugString);
+							outToClient.println("DEALER " + card.name + " " + card.suit);
+							outToClient.flush();
 
 							if (gameActive == false) {
 								dealerHandString = "";
-							}
-						} else {
-							deck = Card.setDeck();
-							hand = new Card[6];
-							handSize = 0;
-							handValue = 0;
-
-							for (int i = 0; i < 2; i++) {
-
-								/* On listening port */
-								card = new Card();
-
-								card = deck.get(0);
-
-								deck.remove(0);
-
-								hand[handSize] = card;
-								handSize++;
-								dealerHandString = dealerHandString + "[" + card.name + " of " + card.suit + "]\n";
-
-								/* Ace check */
-								if (card.name.equals("Ace")) {
-									if (handValue >= 11) {
-										card.value = 1;
-									} else {
-										card.value = 11;
-										numberOf11s++;
-									}
-								}
-
-								handValue = handValue + card.value;
-
-								if (handValue == 21) {
-									// Update game state to win for player
-									wins++;
-									tfWins.setText("" + wins);
-									/*
-									 * Send message to the other guy that he lost and to increment his loss counter.
-									 */
-									toSend = "loss " + dataPort;
-
-									outToClient.println(toSend);
-									outToClient.flush();
-									draw21 = true;
-								}
-							}
-							// dealerHandString = dealerHandString + "\nNumber of cards: " + handSize +
-							// "\nValue: " + handValue;
-							textAreaYourCards.setText(dealerHandString);
-							String debugString = "Number of cards: " + handSize + "\nValue: " + handValue
-									+ "\nNum of 11s: " + numberOf11s;
-							textAreaOpponentsCards.setText(debugString);
-							if (draw21 == true) {
-								dealerHandString = "";
-								draw21 = false;
-								numberOf11s = 0;
-							} else {
-								gameActive = true;
+								btHit.setEnabled(false);
+								btStay.setEnabled(false);
+								btNewHand.setEnabled(true);
 							}
 						}
 					} catch (Exception f) {
@@ -355,35 +325,90 @@ public class GUIDealer {
 		btHit.setBounds(10, 204, 100, 20);
 		panelGUIgameYours.add(btHit);
 
-		JButton btStay = new JButton("Stay");
-		btStay.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// Disables hit/stay buttons
-
-				// Sets turnEnded to 1
-
-				// Sends message to host for them to take their turn
-
-				if (isConnectedToOtherClient != false) {
-					// Disables hit/stay buttons
-					btStay.setEnabled(false);
-					btHit.setEnabled(false);
-					
-					outToClient.println("stay");
-					outToClient.flush();
-					
-				} else {
-					System.out.println("Not connected to host.");
-				}
-				
-			}
-		});
-		btStay.setBounds(122, 204, 100, 20);
-		panelGUIgameYours.add(btStay);
-
 		JLabel lbYourCards = new JLabel("Your Cards:");
 		lbYourCards.setBounds(12, 12, 121, 15);
 		panelGUIgameYours.add(lbYourCards);
+
+		btNewHand.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btHit.setEnabled(true);
+				btStay.setEnabled(true);
+
+				boolean draw21 = false;
+
+				outToClient.println("RESET");
+				outToClient.flush();
+
+				deck = Card.setDeck();
+				hand = new Card[6];
+				handSize = 0;
+				handValue = 0;
+
+				for (int i = 0; i < 2; i++) {
+
+					/* On listening port */
+					card = new Card();
+					card = deck.get(0);
+					deck.remove(0);
+
+					hand[handSize] = card;
+					handSize++;
+					dealerHandString = dealerHandString + "[" + card.name + " of " + card.suit + "]\n";
+
+					/* Ace check */
+					if (card.name.equals("Ace")) {
+						if (handValue >= 11) {
+							card.value = 1;
+						} else {
+							card.value = 11;
+							numberOf11s++;
+						}
+					}
+
+					handValue = handValue + card.value;
+
+					if (handValue == 21) {
+						// Update game state to win for player
+						wins++;
+						tfWins.setText("" + wins);
+						/*
+						 * Send message to the other guy that he lost and to increment his loss counter.
+						 */
+						toSend = "loss " + dataPort;
+
+						outToClient.println(toSend);
+						outToClient.flush();
+						draw21 = true;
+					}
+					
+					if (i == 0) {
+						outToClient.println("DEALER " + "????" + " " + "????");
+						outToClient.flush();
+					} else {
+						outToClient.println("DEALER " + card.name + " " + card.suit);
+						outToClient.flush();
+					}
+				}
+				// dealerHandString = dealerHandString + "\nNumber of cards: " + handSize +
+				// "\nValue: " + handValue;
+				textAreaYourCards.setText(dealerHandString);
+				if (draw21 == true) {
+					dealerHandString = "";
+					draw21 = false;
+					numberOf11s = 0;
+					btHit.setEnabled(false);
+					btStay.setEnabled(false);
+					btNewHand.setEnabled(true);
+				} else {
+					gameActive = true;
+					btNewHand.setEnabled(false);
+				}
+
+			}
+		});
+		btNewHand.setBounds(284, 204, 121, 20);
+		panelGUIgameYours.add(btNewHand);
+		btNewHand.setEnabled(false);
 
 		JButton btDisconnect = new JButton("Disconnect");
 		btDisconnect.addActionListener(new ActionListener() {
@@ -477,9 +502,7 @@ public class GUIDealer {
 
 						/* On listening port */
 						card = new Card();
-
 						card = deck.get(0);
-
 						deck.remove(0);
 
 						hand[handSize] = card;
@@ -497,13 +520,18 @@ public class GUIDealer {
 						}
 
 						handValue = handValue + card.value;
+
+						if (i == 0) {
+							outToClient.println("DEALER " + "????" + " " + "????");
+							outToClient.flush();
+						} else {
+							outToClient.println("DEALER " + card.name + " " + card.suit);
+							outToClient.flush();
+						}
 					}
 					// dealerHandString = dealerHandString + "\nNumber of cards: " + handSize +
 					// "\nValue: " + handValue;
 					textAreaYourCards.setText(dealerHandString);
-					String debugString = "Number of cards: " + handSize + "\nValue: " + handValue
-							+ "\nNum of 11s: " + numberOf11s;
-					textAreaOpponentsCards.setText(debugString);
 					gameActive = true;
 
 					if (handValue == 21) {
@@ -520,7 +548,7 @@ public class GUIDealer {
 						gameActive = false;
 						dealerHandString = "";
 					}
-					
+
 					for (int i = 0; i < 2; i++) {
 
 						/* On listening port */
@@ -529,10 +557,34 @@ public class GUIDealer {
 						card = deck.get(0);
 						deck.remove(0);
 
-						//outToClient.println(card.name + " " + card.suit);
-						//outToClient.flush();
+						opponentHand[oppHandSize] = card;
+						oppHandSize++;
+
+						playerHandString = playerHandString + "[" + card.name + " of " + card.suit + "]\n";
+						textAreaOpponentsCards.setText(playerHandString);
+
+						/* Ace check */
+						if (card.name.equals("Ace")) {
+							if (oppHandValue >= 11) {
+								card.value = 1;
+							} else {
+								card.value = 11;
+								oppNumberOf11s++;
+							}
+						}
+
+						oppHandValue = oppHandValue + card.value;
+
+						outToClient.println(card.name + " " + card.suit + " " + card.value);
+						outToClient.flush();
 					}
 
+					if (gameActive == false) {
+						dealerHandString = "";
+						btHit.setEnabled(false);
+						btStay.setEnabled(false);
+						btNewHand.setEnabled(true);
+					}
 				} catch (Exception f) {
 					isConnected = false;
 					System.out.println("ERROR: Failure in setting up a " + "new thread.");

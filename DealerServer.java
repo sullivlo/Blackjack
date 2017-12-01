@@ -217,7 +217,7 @@ class FTPClientHandler extends Thread {
 					dataConnection = new Socket(remoteIP, Integer.parseInt(dataPort));
 
 					// Initiate data Input/Output streams
-					
+
 					System.out.println("Data line started.");
 
 					// MAGIC
@@ -230,9 +230,8 @@ class FTPClientHandler extends Thread {
 						 */
 						OutputStream outToClient = dataConnection.getOutputStream();
 
-						String toSend = cardTemp.name + " " + cardTemp.suit 
-								+ " " + cardTemp.value;
-						
+						String toSend = cardTemp.name + " " + cardTemp.suit + " " + cardTemp.value;
+
 						// Write to client over DATA line
 						outToClient_Data.println(toSend);
 						outToClient_Data.flush();
@@ -251,10 +250,32 @@ class FTPClientHandler extends Thread {
 					outToClient = null;
 					remoteIP = "";
 					System.out.println("Disconnected!");
-					
+
 				} catch (Exception e) {
 					System.out.println("  ERROR: Closing connection error");
 				}
+			} else if (commandToken.toLowerCase().equals("stay")) {
+				GUIClient.stayChange();
+			} else if (commandToken.toLowerCase().equals("win")) {
+
+			} else if (commandToken.toLowerCase().equals("loss")) {
+
+			} else if (commandToken.toLowerCase().equals("reset")) {
+				GUIClient.resetDealer();
+			} else if (commandToken.toLowerCase().equals("dealer")) {
+				String nameToSend = tokens.nextToken();
+				String suitToSend = tokens.nextToken();
+				System.out.println(nameToSend + " " + suitToSend);
+				GUIClient.updateDealer(nameToSend, suitToSend);
+			} else if (commandToken.equals("Two") || commandToken.equals("Three") || commandToken.equals("Four") 
+					|| commandToken.equals("Five") || commandToken.equals("Six") || commandToken.equals("Seven") 
+					|| commandToken.equals("Eight") || commandToken.equals("Nine") || commandToken.equals("Ten") 
+					|| commandToken.equals("Jack") || commandToken.equals("Queen") || commandToken.equals("King") 
+					|| commandToken.equals("Ace")) {
+				String nameToSend = commandToken;
+				String suitToSend = tokens.nextToken();
+				String valueToSend = tokens.nextToken();
+				GUIClient.updateHand(nameToSend, suitToSend, Integer.parseInt(valueToSend));
 			} else {
 				System.out.println("HOST SERVER: WRONG INPUT");
 			}

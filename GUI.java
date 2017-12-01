@@ -44,7 +44,7 @@ public class GUI {
 	private String portNum = "";
 	
 	private Host host = new Host();
-	private DealerServer hostServer;
+	private PlayerServer hostServer;
 	private Socket controlSocket;
 	private boolean isConnectedToOtherHost = false;
 	
@@ -159,7 +159,7 @@ public class GUI {
 			             This allows for the GUI to act separately from the
 			             actions of the FTP part of the client 
 			            */
-			            hostServer = new DealerServer();
+			            hostServer = new PlayerServer();
 			            hostFTPWelcomeport = hostServer.getFTPWelcomePort();
 			            
 			            /* For debugging */
