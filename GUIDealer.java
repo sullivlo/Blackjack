@@ -40,7 +40,7 @@ public class GUIDealer {
 	private String commandHistory = "";
 	private String ipAddress = "";
 	private String portNum = "";
-	private Card card;
+	private static Card card;
 	public int numberOf11s = 0;
 	public int oppNumberOf11s = 0;
 

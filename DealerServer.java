@@ -257,9 +257,9 @@ class FTPClientHandler extends Thread {
 			} else if (commandToken.toLowerCase().equals("stay")) {
 				GUIClient.stayChange();
 			} else if (commandToken.toLowerCase().equals("win")) {
-
+				GUIClient.incrementWins();
 			} else if (commandToken.toLowerCase().equals("loss")) {
-
+				GUIClient.incrementLosses();
 			} else if (commandToken.toLowerCase().equals("reset")) {
 				GUIClient.resetDealer();
 			} else if (commandToken.toLowerCase().equals("dealer")) {

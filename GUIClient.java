@@ -47,8 +47,8 @@ public class GUIClient {
 	public static int handSize = 0;
 	public static int handValue = 0;
 
-	public int wins = 0;
-	public int losses = 0;
+	public static int wins = 0;
+	public static int losses = 0;
 
 	public static TextArea textAreaYourCards;
 	public static JButton btStay;
@@ -86,8 +86,8 @@ public class GUIClient {
 	/* Holds the condition of whether connected to the Central-Server */
 	private boolean isConnectedToCentralServer = false;
 	private JTextField textField;
-	private JTextField tfWins;
-	private JTextField tfLosses;
+	private static JTextField tfWins;
+	private static JTextField tfLosses;
 
 	/**
 	 * Launch the application.
@@ -198,13 +198,15 @@ public class GUIClient {
 					// while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
 					try {
 						/* On listening port */
-						Card card = new Card();
-						String requestedCard = "";
-
-						Scanner scanner = new Scanner(requestedCard);
-						String newCard = scanner.nextLine();
-
-						StringTokenizer tokens = new StringTokenizer(newCard);
+						Card card = null;
+						
+						outToHost.println("hit");
+						outToHost.flush();
+						
+						while (card == null) {
+							
+						}
+						
 						card.name = tokens.nextToken();
 						card.suit = tokens.nextToken();
 						card.value = Integer.parseInt(tokens.nextToken());
@@ -218,7 +220,7 @@ public class GUIClient {
 							/*
 							 * Send message to the other guy that he lost and to increment his loss counter.
 							 */
-							toSend = "loss" + dataPort;
+							toSend = "loss " + dataPort;
 
 							outToHost.println(toSend);
 							outToHost.flush();
@@ -241,7 +243,7 @@ public class GUIClient {
 							/*
 							 * Send message to the other guy that he won and to increment his win counter.
 							 */
-							toSend = "win" + dataPort;
+							toSend = "win " + dataPort;
 
 							outToHost.println(toSend);
 							outToHost.flush();
@@ -432,5 +434,15 @@ public class GUIClient {
 	public static void resetDealer() {
 		opponentHandString = "";
 		textAreaOpponentsCards.setText("");
+	}
+	
+	public static void incrementWins() {
+		wins++;
+		tfWins.setText("" + wins);
+	}
+	
+	public static void incrementLosses() {
+		losses++;
+		tfLosses.setText("" + losses);
 	}
 }

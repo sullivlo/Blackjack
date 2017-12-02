@@ -256,12 +256,13 @@ class FTPServerHandler extends Thread {
 				}
 			} else if (commandToken.toLowerCase().equals("stay")) {
 				//right here
-				System.out.println("Hello!");
 				GUIClient.stayChange();
 			} else if (commandToken.toLowerCase().equals("win")) {
 
 			} else if (commandToken.toLowerCase().equals("loss")) {
 
+			} else if (commandToken.toLowerCase().equals("hit")) {
+					
 			} else {
 				System.out.println("HOST SERVER: WRONG INPUT");
 			}
