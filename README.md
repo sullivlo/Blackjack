@@ -49,57 +49,5 @@
          else
              User wins
 
-------------------------------------------------------------------------------------------------------------
-Shit to Get Done For The Game
-
-Playing Text Field
-- Retrieve opponent username and display it.
-
-Dealer Card Field
-- Display opponent’s current cards.
-- Update when they change.
-
-Player Card Field
-- Display user’s current cards.
-- Update when they change.
-
-Hit Button
-- If host{
-    - Retrieve card from deck
-    - Displays on Player field
-    - Checks for bust
-    - Sends data to opponent
-- }else{
-    - Request card from host
-    - Display on player field
-    - Check for bust
-- }
-
-Stay Button
-- If !host{
-    - Disables hit/stay buttons
-    - Sets turnEnded to 1
-    - Sends message to host for them to take their turn
-- }else{
-    - Disables hit/stay buttons
-    - Sets turnEnded to 1
-    - Sends message to client to compare scores
-- }
-
-Win/Loss Fields
-- When a win or loss is calculated, increment the appropriate text field
-
-Disconnect Button
-- Sends Disconnect message to other user
-- Disconnects from current user
-- Re-opens lobby GUI (wait for Brendon/Javier’s code to add this)
-
-X Button (On header)
-- Sends Disconnect message to other user
-- Terminates the entire program
-
---------------------------
-Tomorrow:
-- Convert retro function to send/display cards.
-- General game logic
-     (When card is taken from deck, remove it from ArrayList. When ArrayList is empty, create a new deck.)
+ToDo:
+- Game is almost fully functioning. Only issue is it both dealer and player stay, player will not enter a game end state, and crashed due to NullPointerException. This seems to be due to the JTextFields tfWins and tfLosses suddenly becoming fully inaccessible, even if we recreate them at that very moment. We are unsure how to fix this.
