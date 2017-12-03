@@ -57,6 +57,7 @@ public class GUIDealer {
 	public static int losses = 0;
 
 	public boolean turnEnded = false;
+	private String DealerNameSTR = "";
 
 	private static String dealerHandString = "";
 	private static String playerHandString = "";
@@ -87,7 +88,7 @@ public class GUIDealer {
 	private boolean alreadySetupFTPServer = false;
 	/* Holds the condition of whether connected to the Central-Server */
 	private boolean isConnectedToCentralServer = false;
-	private JTextField textField;
+	private JTextField DealerName;
 	private static JTextField tfWins;
 	private static JTextField tfLosses;
 	private static TextArea textAreaOpponentsCards;
@@ -101,7 +102,7 @@ public class GUIDealer {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIDealer window = new GUIDealer("1235");
+					GUIDealer window = new GUIDealer("Louis", "1235");
 					window.frmDealer.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -113,7 +114,8 @@ public class GUIDealer {
 	/**
 	 * Create the application.
 	 */
-	public GUIDealer(String portNum) {
+	public GUIDealer(String name, String portNum) {
+		DealerNameSTR = name;
 		DealerPortNum = portNum;
 		initialize();
 	}
@@ -138,11 +140,11 @@ public class GUIDealer {
 		lbBlackJackTitle.setBounds(12, 12, 196, 15);
 		frmDealer.getContentPane().add(lbBlackJackTitle);
 
-		textField = new JTextField();
-		textField.setEditable(false);
-		textField.setBounds(129, 32, 114, 19);
-		frmDealer.getContentPane().add(textField);
-		textField.setColumns(10);
+		DealerName = new JTextField(DealerNameSTR);
+		DealerName.setEditable(false);
+		DealerName.setBounds(129, 32, 114, 19);
+		frmDealer.getContentPane().add(DealerName);
+		DealerName.setColumns(10);
 
 		JPanel panelGUIGameOpponents = new JPanel();
 		panelGUIGameOpponents.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));

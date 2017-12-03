@@ -65,6 +65,7 @@ public class GUIClient {
 	private static String opponentHandString = "";
 	private static String dealerHandString = "";
 	private String toSend = "";
+	private String ClientNameSTR = "";
 
 	public String ClientPortNum = "1235";
 	public int dataPort = 1240;
@@ -91,7 +92,7 @@ public class GUIClient {
 	private boolean alreadySetupFTPServer = false;
 	/* Holds the condition of whether connected to the Central-Server */
 	private boolean isConnectedToCentralServer = false;
-	public JTextField textField;
+	public JTextField ClientName;
 	public static JTextField tfWins;
 	public static JTextField tfLosses;
 	private static JLabel lblYourePlaying;
@@ -103,7 +104,7 @@ public class GUIClient {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIClient window = new GUIClient("1235");
+					GUIClient window = new GUIClient("Matt","1235");
 					window.frmPlaya.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -115,8 +116,12 @@ public class GUIClient {
 	/**
 	 * Create the application.
 	 */
-	public GUIClient(String clientPortnNum) {
+	public GUIClient(String ClientName, String clientPortnNum) {
+		
+		ClientNameSTR = ClientName;
+		
 		ClientPortNum = clientPortnNum;
+		
 		initialize();
 	}
 
@@ -126,7 +131,7 @@ public class GUIClient {
 	private void initialize() {
 
 		frmPlaya = new JFrame();
-		frmPlaya.setTitle("Playa");
+		frmPlaya.setTitle("Player");
 		frmPlaya.setBounds(100, 100, 451, 628);
 		frmPlaya.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmPlaya.getContentPane().setLayout(null);
@@ -140,11 +145,12 @@ public class GUIClient {
 		lbBlackJackTitle.setBounds(12, 12, 196, 15);
 		frmPlaya.getContentPane().add(lbBlackJackTitle);
 
-		textField = new JTextField();
-		textField.setEditable(false);
-		textField.setBounds(129, 32, 114, 19);
-		frmPlaya.getContentPane().add(textField);
-		textField.setColumns(10);
+		ClientName = new JTextField(ClientNameSTR);
+		
+		ClientName.setEditable(false);
+		ClientName.setBounds(129, 32, 114, 19);
+		frmPlaya.getContentPane().add(ClientName);
+		ClientName.setColumns(10);
 
 		tfWins = new JTextField();
 		tfWins.setEditable(false);
