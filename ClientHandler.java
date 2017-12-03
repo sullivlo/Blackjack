@@ -29,7 +29,7 @@ public class ClientHandler extends Thread{
     private String UserFTPWelcomePort;
     private String tmpFileName, tmpKeyWords;
       
-    private HostedDescriptions allHostedDescriptions;  
+   private HostedDescriptions allHostedDescriptions;  
       
 	/*******************************************************************
     *

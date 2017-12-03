@@ -266,6 +266,12 @@ class FTPClientHandler extends Thread {
 			} else if (commandToken.toLowerCase().equals("windealer")) {
 				// Tells the dealer that they won.
 				GUIDealer.incrementWins();
+			} else if (commandToken.toLowerCase().equals("windealerlossclient")) {
+				// Tells the dealer that they won.
+				GUIClient.incrementLosses();
+			} else if (commandToken.toLowerCase().equals("winclientlossdealer")) {
+				// Tells the dealer that they won.
+				GUIClient.incrementWins();
 			} else if (commandToken.toLowerCase().equals("lossdealer")) {
 				// Tells the dealer that they lost.
 				GUIDealer.incrementLosses();
@@ -283,12 +289,11 @@ class FTPClientHandler extends Thread {
 				
 				if (clientScore > dealerScore) {
 					GUIDealer.incrementLosses();
-					GUIClient.incrementWins(clientWinsStr);
+					GUIDealer.enableNewGame("win");
 				}else if (dealerScore >= clientScore) {
 					GUIDealer.incrementWins();
-					GUIClient.incrementLosses(clientLossStr);
+					GUIDealer.enableNewGame("loss");
 				}
-				GUIDealer.enableNewGame();
 			} else if (commandToken.toLowerCase().equals("resetfromdealer")) {
 				GUIClient.reset();
 			} else if (commandToken.toLowerCase().equals("resetfromclient")) {

@@ -66,13 +66,15 @@ public class GUIDealer {
 
 	private boolean isConnected = false;
 	public boolean gameActive = false;
+	public static boolean clientWin = false;
+	public static boolean clientLoss = false;
 
 	private Host host = new Host();
 	private DealerServer hostServer;
 	private Socket controlSocket;
 	private boolean isConnectedToOtherClient = false;
 
-	/* This handles the control-line out stream */
+	static /* This handles the control-line out stream */
 	PrintWriter outToClient = null;
 
 	/* This handles the control-line in stream */
@@ -265,9 +267,6 @@ public class GUIDealer {
 								outToClient.println(toSend);
 								outToClient.flush();
 								
-								dealerHandString = dealerHandString + "\nYou win!";
-								textAreaYourCards.setText(dealerHandString);
-								
 								gameActive = false;
 								numberOf11s = 0;
 							}
@@ -300,9 +299,6 @@ public class GUIDealer {
 									outToClient.println(toSend);
 									outToClient.flush();
 									
-									dealerHandString = dealerHandString + "\nYou lose...";
-									textAreaYourCards.setText(dealerHandString);
-									
 									gameActive = false;
 									numberOf11s = 0;
 								}
@@ -318,9 +314,6 @@ public class GUIDealer {
 								outToClient.println(toSend);
 								outToClient.flush();
 								gameActive = false;
-
-								dealerHandString = dealerHandString + "\nYou win!";
-								textAreaYourCards.setText(dealerHandString);
 								
 								numberOf11s = 0;
 							}
@@ -347,6 +340,8 @@ public class GUIDealer {
 				} catch (Exception f) {
 					System.out.println("Error trying to retrieve file.");
 				}
+				
+				System.out.println(handValue);
 			}
 		});
 		btHit.setBounds(10, 204, 100, 20);
@@ -375,7 +370,7 @@ public class GUIDealer {
 				opponentHand = new Card[6];
 				oppHandSize = 0;
 				oppHandValue = 0;
-
+				
 				for (int i = 0; i < 2; i++) {
 
 					/* On listening port */
@@ -415,9 +410,6 @@ public class GUIDealer {
 						}
 						outToClient.println(toSend);
 						outToClient.flush();
-						
-						dealerHandString = dealerHandString + "\nYou win!";
-						textAreaYourCards.setText(dealerHandString);
 						
 						draw21 = true;
 					}
@@ -478,9 +470,6 @@ public class GUIDealer {
 
 					outToClient.println(toSend);
 					outToClient.flush();
-					
-					dealerHandString = dealerHandString + "\nYou lose...";
-					textAreaYourCards.setText(dealerHandString);
 					
 					gameActive = false;
 					draw21 = true;
@@ -643,9 +632,6 @@ public class GUIDealer {
 						outToClient.flush();
 						gameActive = false;
 						
-						dealerHandString = dealerHandString + "\nYou win!";
-						textAreaYourCards.setText(dealerHandString);
-						
 						dealerHandString = "";
 					}
 
@@ -695,9 +681,6 @@ public class GUIDealer {
 						outToClient.println(toSend);
 						outToClient.flush();
 						
-						dealerHandString = dealerHandString + "\nYou lose...";
-						textAreaYourCards.setText(dealerHandString);
-						
 						gameActive = false;
 					}
 
@@ -733,17 +716,11 @@ public class GUIDealer {
 	public static void incrementWins() {
 		wins++;
 		tfWins.setText("" + wins);
-		
-		dealerHandString = dealerHandString + "\nYou win!";
-		textAreaYourCards.setText(dealerHandString);
 	}
 	
 	public static void incrementLosses() {
 		losses++;
 		tfLosses.setText("" + losses);
-		
-		dealerHandString = dealerHandString + "\nYou lose...";
-		textAreaYourCards.setText(dealerHandString);
 	}
 	
 	public static void updatePlayer(String name, String suit) {
@@ -756,7 +733,20 @@ public class GUIDealer {
 		btNewHand.doClick();
 	}
 	
-	public static void enableNewGame() {
+	public static void enableNewGame(String result) {
+		if (result.equals("win")) {
+			clientWin = true;
+			String toSend = "winclientlossdealer";
+
+			outToClient.println(toSend);
+			outToClient.flush();
+		}else if (result.equals("loss")) {
+			clientLoss = true;
+			String toSend = "windealerlossclient";
+
+			outToClient.println(toSend);
+			outToClient.flush();
+		}
 		btNewHand.setEnabled(true);
 	}
 	

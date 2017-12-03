@@ -40,7 +40,7 @@ public class GUIGame {
 	private String portNum = "";
 	
 	private Host host = new Host();
-	private HostServer hostServer;
+	//private HostServer hostServer;
 	private Socket controlSocket;
 	private boolean isConnectedToOtherHost = false;
 	

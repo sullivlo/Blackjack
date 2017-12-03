@@ -238,9 +238,6 @@ public class GUIClient {
 							 * Send message to the other guy that he lost and to increment his loss counter.
 							 */
 							toSend = "lossdealer " + dataPort;
-							
-							dealerHandString = dealerHandString + "\nYou win!";
-							textAreaYourCards.setText(dealerHandString);
 
 							outToHost.println(toSend);
 							outToHost.flush();
@@ -272,9 +269,6 @@ public class GUIClient {
 								 */
 								toSend = "windealer " + dataPort;
 								
-								dealerHandString = dealerHandString + "\nYou lose...";
-								textAreaYourCards.setText(dealerHandString);
-
 								outToHost.println(toSend);
 								outToHost.flush();
 								gameActive = false;
@@ -288,9 +282,6 @@ public class GUIClient {
 							 * Send message to the other guy that he lost and to increment his loss counter.
 							 */
 							toSend = "lossdealer " + dataPort;
-							
-							dealerHandString = dealerHandString + "\nYou win!";
-							textAreaYourCards.setText(dealerHandString);
 
 							outToHost.println(toSend);
 							outToHost.flush();
@@ -317,6 +308,8 @@ public class GUIClient {
 				} catch (Exception f) {
 					System.out.println("Error trying to retrieve card.");
 				}
+				
+				System.out.println(handValue);
 			}
 		});
 		btHit.setBounds(10, 204, 100, 20);
@@ -525,18 +518,12 @@ public class GUIClient {
 		wins = wins + 1;
 		System.out.println(wins + "");
 		tfWins.setText("" + wins);
-		
-		dealerHandString = dealerHandString + "\nYou win!";
-		textAreaYourCards.setText(dealerHandString);
 	}
 	
 	public static void incrementLosses() {
 		losses = losses + 1;
 		System.out.println(losses + "");
 		tfLosses.setText("" + losses);
-		
-		dealerHandString = dealerHandString + "\nYou lose...";
-		textAreaYourCards.setText(dealerHandString);
 	}
 	
 	public static void receiveDeck(ArrayList<Card> gotDeck) {
@@ -550,20 +537,22 @@ public class GUIClient {
 	public static void incrementWins(String w) {
 		int winInt = Integer.parseInt(w);
 		wins = winInt  + 1;
+		String tmp = winInt + "";
 		
-		tfWins.setText(wins + "");
+		System.out.println("wins: " +  wins);
 		
-		dealerHandString = dealerHandString + "\nYou win!";
-		textAreaYourCards.setText(dealerHandString);
+		//tfWins.setText(tmp);
 	}
 	
 	public static void incrementLosses(String l) {
 		int lossInt = Integer.parseInt(l);
 		losses = lossInt  + 1;
 		
-		tfLosses.setText(losses + "");
+		String tmp = lossInt + "";
+		System.out.println("Losses: " +  losses);
 		
-		dealerHandString = dealerHandString + "\nYou lose...";
-		textAreaYourCards.setText(dealerHandString);
+		//tfLosses.setText(tmp);
 	}
+	
+	
 }
