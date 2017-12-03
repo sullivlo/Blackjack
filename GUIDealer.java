@@ -63,6 +63,7 @@ public class GUIDealer {
 	private String toSend = "";
 
 	public int dataPort = 1240;
+	public String DealerPortNum;
 
 	private boolean isConnected = false;
 	public boolean gameActive = false;
@@ -100,7 +101,7 @@ public class GUIDealer {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIDealer window = new GUIDealer();
+					GUIDealer window = new GUIDealer("1235");
 					window.frmDealer.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -112,7 +113,8 @@ public class GUIDealer {
 	/**
 	 * Create the application.
 	 */
-	public GUIDealer() {
+	public GUIDealer(String portNum) {
+		DealerPortNum = portNum;
 		initialize();
 	}
 
@@ -357,6 +359,7 @@ public class GUIDealer {
 				btStay.setEnabled(true);
 
 				boolean draw21 = false;
+				numberOf11s = 0;
 
 				outToClient.println("resetfromdealer");
 				outToClient.flush();
@@ -540,8 +543,8 @@ public class GUIDealer {
 				/* Perform a loop to wait for new connections */
 
 				try {
-
-					ServerSocket welcomeSocket = new ServerSocket(1235);
+					
+					ServerSocket welcomeSocket = new ServerSocket(Integer.parseInt(DealerPortNum));
 
 					do {
 						/* Wait for client... */

@@ -66,13 +66,16 @@ public class GUIClient {
 	private static String dealerHandString = "";
 	private String toSend = "";
 
+	public String ClientPortNum = "1235";
 	public int dataPort = 1240;
 
 	private boolean isConnected = false;
 	public static boolean gameActive = false;
 
 	private Host host = new Host();
-	private PlayerServer hostServer;
+	
+	//private PlayerServer hostServer;
+	
 	private Socket controlSocket;
 	private boolean isConnectedToOtherHost = false;
 
@@ -100,7 +103,7 @@ public class GUIClient {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIClient window = new GUIClient();
+					GUIClient window = new GUIClient("1235");
 					window.frmPlaya.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -112,7 +115,8 @@ public class GUIClient {
 	/**
 	 * Create the application.
 	 */
-	public GUIClient() {
+	public GUIClient(String clientPortnNum) {
+		ClientPortNum = clientPortnNum;
 		initialize();
 	}
 
@@ -223,7 +227,6 @@ public class GUIClient {
 						Card card = new Card();
 						card = deck.get(0);
 						deck.remove(0);
-;
 						hand[handSize] = card;
 						handSize++;
 
@@ -378,7 +381,8 @@ public class GUIClient {
 
 				/* Connect to other user's HostServer */
 				try {
-					connect(ipAddress, portNum);
+					
+					connect(ipAddress, ClientPortNum + "" );
 					btConnect.setEnabled(false);
 
 					do {
@@ -510,6 +514,7 @@ public class GUIClient {
 		hand = new Card[6];
 		handSize = 0;
 		handValue = 0;
+		numberOf11s = 0;
 		dealerHandString = "";
 		textAreaYourCards.setText(dealerHandString);
 	}
