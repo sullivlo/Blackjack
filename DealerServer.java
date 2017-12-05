@@ -1,6 +1,5 @@
 import java.net.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.io.*;
 
 /*************************
@@ -18,8 +17,6 @@ public class DealerServer extends Thread {
 
 	// private static final int serverPort = 1234;
 	// private static ServerSocket serverSocket;
-
-	private String recvMsg;
 
 	/* Brendon Version Nov 16, 2017 */
 	private static int welcomePort = 1235;
@@ -109,42 +106,14 @@ public class DealerServer extends Thread {
  **********************************************************************/
 class FTPClientHandler extends Thread {
 
-	/** This sets the packet size to be sent across to this size */
-	private static final int BUFSIZE = 32768;
-
-	/** Port for the commands to be sent across */
-	private static final int controlPort = 1078;
-
-	/** This socket takes commands from client */
-	private Socket controlListen;
-
-	/** This socket takes data from client */
-	private Socket dataSocket;
-
 	/** This handles the stream from the command-line of client */
 	private Scanner inScanFromClient;
-
-	/** This handles the output stream by command-line to client */
-	// private PrintWriter outToClient;
-
-	/**
-	 * This is used for handling the buffering of files over / the data stream
-	 */
-	private int recvMsgSize;
 
 	/** This is used to grab bytes over the data-line */
 	private String recvMsg;
 
-	/** This allows for identification of specific users in streams */
-	private String remoteIP;
-
 	/** This acts as a deck for gameplay. */
 	public ArrayList<Card> deck = Card.setDeck();
-
-	/** Javier's Stream */
-	private InputStream inFromClient;
-	private OutputStream outToClient;
-
 	/*******************************************************************
 	 *
 	 * Beginning of thread. This constructor marks the beginning of a thread on the
@@ -156,10 +125,8 @@ class FTPClientHandler extends Thread {
 			/* Setting up a threaded input control-stream */
 			inScanFromClient = new Scanner(controlListen.getInputStream());
 			/* Setting up a threaded output control-stream */
-			outToClient = controlListen.getOutputStream();
 			/* For error handling */
 			/* Get IP from the control socket for future connections */
-			remoteIP = controlListen.getInetAddress().getHostAddress();
 			System.out.println("A new thread was successfully setup.");
 			System.out.println("");
 		} catch (IOException ioEx) {
@@ -176,11 +143,6 @@ class FTPClientHandler extends Thread {
 	 * 
 	 ******************************************************************/
 	public void run() {
-		/* For sending and retrieving file */
-		int BUFSIZE = 32768;
-		byte[] byteBuffer = new byte[BUFSIZE];
-
-		Socket dataConnection;
 		boolean stayAlive = true;
 
 		ArrayList<Card> deck = new ArrayList<Card>();
@@ -200,58 +162,8 @@ class FTPClientHandler extends Thread {
 			StringTokenizer tokens = new StringTokenizer(recvMsg);
 			String commandToken = tokens.nextToken();
 
-			if (commandToken.toLowerCase().equals("retr")) {
-
-				// System.out.println(" DEBUG: Inside retrieve...");
-
-				String dataPort = tokens.nextToken();
-
-				// System.out.println(" DEBUG: Dataport: " + dataPort);
-
-				String fileName = tokens.nextToken();
-
-				// System.out.println(" DEBUG: Banana: " + dataPort + " " + fileName + " banana
-				// banana");
-
-				Scanner inFromClient_Data = null;
-				PrintWriter outToClient_Data = null;
+			if (commandToken.toLowerCase().equals("quit")) {
 				try {
-					// Data connection socket
-					dataConnection = new Socket(remoteIP, Integer.parseInt(dataPort));
-
-					// Initiate data Input/Output streams
-
-					System.out.println("Data line started.");
-
-					// MAGIC
-
-					Card cardTemp = deck.get(0);
-					deck.remove(0);
-					try {
-						/*
-						 * Declare variables for converting file to byte[]
-						 */
-						OutputStream outToClient = dataConnection.getOutputStream();
-
-						String toSend = cardTemp.name + " " + cardTemp.suit + " " + cardTemp.value;
-
-						// Write to client over DATA line
-						outToClient_Data.println(toSend);
-						outToClient_Data.flush();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-
-					// Close after the data is written to client
-					dataConnection.close();
-				} catch (Exception j) {
-					System.out.println("  DEBUG: awful error...");
-				}
-			} else if (commandToken.toLowerCase().equals("quit")) {
-				try {
-					inScanFromClient = null;
-					outToClient = null;
-					remoteIP = "";
 					System.out.println("Disconnected!");
 
 				} catch (Exception e) {
@@ -263,6 +175,12 @@ class FTPClientHandler extends Thread {
 			} else if (commandToken.toLowerCase().equals("lossclient")) {
 				// Tells the client that they lost.
 				GUIClient.incrementLosses();
+			} else if (commandToken.equals("usernamedealer")) {
+				// Tells the client that they won.
+				GUIClient.whoAmIFacing(tokens.nextToken());
+			} else if (commandToken.equals("usernameclient")) {
+				// Tells the client that they lost.
+				GUIDealer.whoAmIFacing(tokens.nextToken());
 			} else if (commandToken.toLowerCase().equals("windealer")) {
 				// Tells the dealer that they won.
 				GUIDealer.incrementWins();
@@ -281,9 +199,6 @@ class FTPClientHandler extends Thread {
 				String clientScoreStr = tokens.nextToken();
 				int clientScore = Integer.parseInt(clientScoreStr);
 				int dealerScore = GUIDealer.getValue();
-				
-				String clientWinsStr = tokens.nextToken();
-				String clientLossStr = tokens.nextToken();
 				
 				System.out.println("Client: " + clientScore + "\nDealer: " + dealerScore);
 				

@@ -13,7 +13,6 @@ public class Card {
 				"King", "Ace" };
 
 		ArrayList<Card> deck = new ArrayList<Card>();
-		int tmp = 0;
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 13; j++) {
 				Card c = new Card();
@@ -29,7 +28,6 @@ public class Card {
 					c.value = 11;
 				}
 				deck.add(c);
-				tmp++;
 			}
 		}
 		long seed = System.nanoTime();

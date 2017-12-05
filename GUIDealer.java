@@ -3,23 +3,13 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
-import javax.swing.JButton;
-import java.awt.Font;
+import javax.swing.*;
 import javax.swing.JTextField;
-import javax.swing.JList;
-import javax.swing.AbstractListModel;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
 
-import java.awt.Scrollbar;
 import java.awt.TextArea;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -28,19 +18,10 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.io.*;
 
-/* For tokens */
-import java.util.*;
-import javax.swing.JTextArea;
-import javax.swing.JTable;
-import javax.swing.JTextPane;
-
 public class GUIDealer {
 
 	private JFrame frmDealer;
 
-	private String commandHistory = "";
-	private String ipAddress = "";
-	private String portNum = "";
 	private static Card card;
 	public int numberOf11s = 0;
 	public int oppNumberOf11s = 0;
@@ -66,14 +47,13 @@ public class GUIDealer {
 	public int dataPort = 1240;
 	public String DealerPortNum;
 
+	private ServerSocket welcomeSocket;
+	
 	private boolean isConnected = false;
 	public boolean gameActive = false;
 	public static boolean clientWin = false;
 	public static boolean clientLoss = false;
 
-	private Host host = new Host();
-	private DealerServer hostServer;
-	private Socket controlSocket;
 	private boolean isConnectedToOtherClient = false;
 
 	static /* This handles the control-line out stream */
@@ -82,27 +62,24 @@ public class GUIDealer {
 	/* This handles the control-line in stream */
 	Scanner inFromClient = null;
 
-	/* This is used as a helper in initial connection to Central-Server */
-	private String hostFTPWelcomeport;
-	/* Holds the condition of whether Host-as-Server is setup */
-	private boolean alreadySetupFTPServer = false;
-	/* Holds the condition of whether connected to the Central-Server */
-	private boolean isConnectedToCentralServer = false;
-	private JTextField DealerName;
+	private static JTextField DealerName;
 	private static JTextField tfWins;
 	private static JTextField tfLosses;
 	private static TextArea textAreaOpponentsCards;
 	private static JButton btNewHand;
 	private static TextArea textAreaYourCards;
+	private static JButton btnReadyForPlayer;
 
+	private ServerSocket ourWelcomeSocket;
+	
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
+	public void start(String name, String portNum, ServerSocket tmpBBBWelcomeSocket) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIDealer window = new GUIDealer("Louis", "1235");
+					GUIDealer window = new GUIDealer(name, portNum, tmpBBBWelcomeSocket);
 					window.frmDealer.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -114,16 +91,17 @@ public class GUIDealer {
 	/**
 	 * Create the application.
 	 */
-	public GUIDealer(String name, String portNum) {
+	public GUIDealer(String name, String portNum, ServerSocket ptrWelcomeSocket) {
 		DealerNameSTR = name;
 		DealerPortNum = portNum;
+		ourWelcomeSocket = ptrWelcomeSocket;
 		initialize();
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	public void initialize() {
 
 		frmDealer = new JFrame();
 		frmDealer.setTitle("Dealer");
@@ -140,7 +118,7 @@ public class GUIDealer {
 		lbBlackJackTitle.setBounds(12, 12, 196, 15);
 		frmDealer.getContentPane().add(lbBlackJackTitle);
 
-		DealerName = new JTextField(DealerNameSTR);
+		DealerName = new JTextField("" + DealerPortNum);
 		DealerName.setEditable(false);
 		DealerName.setBounds(129, 32, 114, 19);
 		frmDealer.getContentPane().add(DealerName);
@@ -216,36 +194,10 @@ public class GUIDealer {
 				/**
 				 * Request new card from the host dealer
 				 */
-
-				byte[] byteBuffer = new byte[32768];
-				/**
-				 * establish data connection from hostA to hostB
-				 */
-				ServerSocket dataListen;
-				String ipAddress = "";
+				
 				/** The port number to send files across */
 				dataPort = 1240;
-				int recvMsgSize;
-
-				toSend = "retr" + dataPort;
-
-				// outToHost.println(toSend);
-				// outToHost.flush();
-
-				Socket dataConnection = null;
-
 				try {
-					/* Connect to server and establish variables */
-					// dataListen = new ServerSocket(dataPort);
-
-					// System.out.println("Freeze happens here");
-					// dataConnection = dataListen.accept();
-
-					// System.out.println("We made it");
-					// InputStream inFromServer_Data = dataConnection.getInputStream();
-
-					// while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
-
 					try {
 						if (gameActive == true) {
 							/* On listening port */
@@ -538,27 +490,21 @@ public class GUIDealer {
 		frmDealer.getContentPane().add(tfLosses);
 		tfLosses.setText("" + losses);
 
-		JButton btnReadyForPlayer = new JButton("Ready for player");
+		btnReadyForPlayer = new JButton("Ready for player");
 		btnReadyForPlayer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
 				/* Perform a loop to wait for new connections */
 
 				try {
-					
-					ServerSocket welcomeSocket = new ServerSocket(Integer.parseInt(DealerPortNum));
 
 					do {
 						/* Wait for client... */
-						Socket connectionSocket = welcomeSocket.accept();
+						Socket connectionSocket = ourWelcomeSocket.accept();
 
 						/* Display to terminal when new client connects */
 						System.out.println("\nClient-As-FTP-Server: New Client Connected!");
 						isConnected = true;
-
-						/* For debugging */
-						// System.out.println(" DEBUG: New Connection's IP: " +
-						// connectionSocket.getInetAddress());
 
 						/*
 						 * Create a thread to handle communication with this client and pass the
@@ -588,6 +534,9 @@ public class GUIDealer {
 					} while (isConnected == false);
 					isConnectedToOtherClient = true;
 
+					outToClient.println("usernamedealer " + DealerNameSTR);
+					outToClient.flush();
+					
 					for (int i = 0; i < 2; i++) {
 
 						/* On listening port */
@@ -723,6 +672,11 @@ public class GUIDealer {
 		tfWins.setText("" + wins);
 	}
 	
+	public void clickReady() {
+		btnReadyForPlayer.doClick();
+		btnReadyForPlayer.setVisible(false);
+	}
+	
 	public static void incrementLosses() {
 		losses++;
 		tfLosses.setText("" + losses);
@@ -757,5 +711,9 @@ public class GUIDealer {
 	
 	public static int getValue() {
 		return handValue;
+	}
+	
+	public static void whoAmIFacing(String name) {
+		DealerName.setText(name);
 	}
 }

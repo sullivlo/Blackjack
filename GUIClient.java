@@ -3,43 +3,24 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import javax.swing.JButton;
-import java.awt.Font;
 import javax.swing.JTextField;
-import javax.swing.JList;
-import javax.swing.AbstractListModel;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import java.awt.Scrollbar;
 import java.awt.TextArea;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.net.*;
 import java.util.*;
 import java.io.*;
-
-/* For tokens */
-import java.util.*;
-import javax.swing.JTextArea;
-import javax.swing.JTable;
-import javax.swing.JTextPane;
 import javax.swing.UIManager;
 
 public class GUIClient {
 
 	private static JFrame frmPlaya;
 
-	private String commandHistory = "";
 	private String ipAddress = "127.0.0.1";
-	private String portNum = "1235";
-	private Card card;
 	public static int numberOf11s = 0;
 
 	public static ArrayList<Card> deck = null;
@@ -67,15 +48,9 @@ public class GUIClient {
 	private String toSend = "";
 	private String ClientNameSTR = "";
 
-	public String ClientPortNum = "1235";
-	public int dataPort = 1240;
+	public String ClientPortNum = "";
 
-	private boolean isConnected = false;
 	public static boolean gameActive = false;
-
-	private Host host = new Host();
-	
-	//private PlayerServer hostServer;
 	
 	private Socket controlSocket;
 	private boolean isConnectedToOtherHost = false;
@@ -86,26 +61,21 @@ public class GUIClient {
 	/* This handles the control-line in stream */
 	Scanner inFromHost = null;
 
-	/* This is used as a helper in initial connection to Central-Server */
-	private String hostFTPWelcomeport;
-	/* Holds the condition of whether Host-as-Server is setup */
-	private boolean alreadySetupFTPServer = false;
-	/* Holds the condition of whether connected to the Central-Server */
-	private boolean isConnectedToCentralServer = false;
-	public JTextField ClientName;
+	public static JTextField ClientName;
 	public static JTextField tfWins;
 	public static JTextField tfLosses;
 	private static JLabel lblYourePlaying;
+	private static JButton btConnect;
 
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
+	public void start(String ClientName, String clientPortnNum) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIClient window = new GUIClient("Matt","1235");
-					window.frmPlaya.setVisible(true);
+					GUIClient window = new GUIClient(ClientName,clientPortnNum);
+					GUIClient.frmPlaya.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -116,19 +86,16 @@ public class GUIClient {
 	/**
 	 * Create the application.
 	 */
-	public GUIClient(String ClientName, String clientPortnNum) {
-		
+	public GUIClient(String ClientName, String clientPortNum) {
 		ClientNameSTR = ClientName;
-		
-		ClientPortNum = clientPortnNum;
-		
+		ClientPortNum = clientPortNum;
 		initialize();
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	public void initialize() {
 
 		frmPlaya = new JFrame();
 		frmPlaya.setTitle("Player");
@@ -145,8 +112,7 @@ public class GUIClient {
 		lbBlackJackTitle.setBounds(12, 12, 196, 15);
 		frmPlaya.getContentPane().add(lbBlackJackTitle);
 
-		ClientName = new JTextField(ClientNameSTR);
-		
+		ClientName = new JTextField(ClientPortNum);
 		ClientName.setEditable(false);
 		ClientName.setBounds(129, 32, 114, 19);
 		frmPlaya.getContentPane().add(ClientName);
@@ -199,35 +165,8 @@ public class GUIClient {
 				/**
 				 * Request new card from the host dealer
 				 */
-
-				byte[] byteBuffer = new byte[32768];
-				/**
-				 * establish data connection from hostA to hostB
-				 */
-				ServerSocket dataListen;
-				String ipAddress = "";
 				/** The port number to send files across */
-				int dataPort = 1240;
-				int recvMsgSize;
-
-				/*
-				String toSend = "retr " + dataPort;
-
-				outToHost.println(toSend);
-				outToHost.flush();
-				*/
-
-				Socket dataConnection = null;
-
 				try {
-					/* Connect to server and establish variables */
-					// dataListen = new ServerSocket(dataPort);
-
-					// dataConnection = dataListen.accept();
-
-					// InputStream inFromServer_Data = dataConnection.getInputStream();
-
-					// while ((recvMsgSize = inFromServer_Data.read(byteBuffer)) != -1) {
 					try {
 						/* On listening port */
 						Card card = new Card();
@@ -246,7 +185,7 @@ public class GUIClient {
 							/*
 							 * Send message to the other guy that he lost and to increment his loss counter.
 							 */
-							toSend = "lossdealer " + dataPort;
+							toSend = "lossdealer " + ClientPortNum;
 
 							outToHost.println(toSend);
 							outToHost.flush();
@@ -276,7 +215,7 @@ public class GUIClient {
 								/*
 								 * Send message to the other guy that he won and to increment his win counter.
 								 */
-								toSend = "windealer " + dataPort;
+								toSend = "windealer " + ClientPortNum;
 								
 								outToHost.println(toSend);
 								outToHost.flush();
@@ -290,7 +229,7 @@ public class GUIClient {
 							/*
 							 * Send message to the other guy that he lost and to increment his loss counter.
 							 */
-							toSend = "lossdealer " + dataPort;
+							toSend = "lossdealer " + ClientPortNum;
 
 							outToHost.println(toSend);
 							outToHost.flush();
@@ -376,9 +315,7 @@ public class GUIClient {
 		lblWins.setBounds(12, 559, 55, 15);
 		frmPlaya.getContentPane().add(lblWins);
 
-		
-
-		JButton btConnect = new JButton("Connect");
+		btConnect = new JButton("Connect");
 		btConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				/**
@@ -388,7 +325,7 @@ public class GUIClient {
 				/* Connect to other user's HostServer */
 				try {
 					
-					connect(ipAddress, ClientPortNum + "" );
+					connect(ipAddress, ClientPortNum);
 					btConnect.setEnabled(false);
 
 					do {
@@ -405,7 +342,9 @@ public class GUIClient {
 				} catch (Exception q) {
 					System.out.println("ERROR: Failed to connect to server!");
 				}
-
+				
+				outToHost.println("usernameclient " + ClientNameSTR);
+				outToHost.flush();
 			}
 		});
 		btConnect.setBounds(269, 29, 127, 34);
@@ -450,9 +389,7 @@ public class GUIClient {
 
 		/* Connect to server's welcome socket */
 		try {
-			controlSocket = new Socket("127.0.0.1", // using hardcoded ipAdress
-					Integer.parseInt("1235")); // using hardcoded portNum
-			boolean controlSocketOpen = true;
+			controlSocket = new Socket(ipAddress, Integer.parseInt(ClientPortNum));
 		} catch (Exception p) {
 			System.out.println("ERROR: Did not find socket!");
 		}
@@ -548,22 +485,23 @@ public class GUIClient {
 	public static void incrementWins(String w) {
 		int winInt = Integer.parseInt(w);
 		wins = winInt  + 1;
-		String tmp = winInt + "";
 		
 		System.out.println("wins: " +  wins);
-		
-		//tfWins.setText(tmp);
+	}
+	
+	public void clickConnect() {
+		btConnect.doClick();
+		btConnect.setVisible(false);
 	}
 	
 	public static void incrementLosses(String l) {
 		int lossInt = Integer.parseInt(l);
 		losses = lossInt  + 1;
 		
-		String tmp = lossInt + "";
 		System.out.println("Losses: " +  losses);
-		
-		//tfLosses.setText(tmp);
 	}
 	
-	
+	public static void whoAmIFacing(String name) {
+		ClientName.setText(name);
+	}
 }
