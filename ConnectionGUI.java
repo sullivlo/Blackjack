@@ -183,6 +183,14 @@ public class ConnectionGUI {
 				GUIClient gameClient = new GUIClient(namesOfHostPlayers.get(0), portsOfHostPlayers.get(0));
 				gameClient.start(username, portsOfHostPlayers.get(0)); 
 				
+				/* In the moment of joining a game, remove that item from the list */
+				for(int i = 0; i < namesOfHostPlayers.size(); i++) {
+					if (namesOfHostPlayers.get(i).equals(username)) {
+						namesOfHostPlayers.remove(i);
+						portsOfHostPlayers.remove(i);
+					}
+				}
+				
 			}
 		});
 		btnJoinGame1.setVisible(false);
@@ -197,6 +205,13 @@ public class ConnectionGUI {
 				GUIClient gameClient = new GUIClient(namesOfHostPlayers.get(1), portsOfHostPlayers.get(1));
 				gameClient.start(username, portsOfHostPlayers.get(1));  
 				
+				/* In the moment of joining a game, remove that item from the list */
+				for(int i = 0; i < namesOfHostPlayers.size(); i++) {
+					if (namesOfHostPlayers.get(i).equals(username)) {
+						namesOfHostPlayers.remove(i);
+						portsOfHostPlayers.remove(i);
+					}
+				}
 			}
 		});
 		btnJoinGame2.setForeground(UIManager.getColor("CheckBoxMenuItem.acceleratorForeground"));

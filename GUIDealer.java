@@ -648,6 +648,7 @@ public class GUIDealer {
 					isConnected = false;
 					System.out.println("ERROR: Failure in setting up a " + "new thread.");
 				}
+				btnReadyForPlayer.setEnabled(false);
 			}
 		});
 		btnReadyForPlayer.setBounds(255, 24, 165, 34);
