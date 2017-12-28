@@ -1,27 +1,5 @@
 ## Blackjack
 
-     ### user clicks connect to server
-          ToDo: Button Connect
-     Games that are avaible shown on textfeild
-          ToDo: Connect to new peer 
-     The house becomes the player waiting for a connections
-          A player connects to another player
-          
-          
-     
-     
-     
-     
-     
-     ToDo: change key word search button to a 'ready to play' button 
-          game will start when all conneced users are 'ready to play'
-               
-     user clicks 'Hold' button
-          ToDo: End of user turn when user has gone over 21, got 21 or clicks 'hold"
-     
-     ToDo: Host.class will be a player
-           CentralServer will be the dealer 
-           GUI will handle connect to CentralServer, ready to play, hit, and hold 
 ### Per to per blackjack game. A user can connect with friends to play blackjack over at tcp connection. 
 
      
@@ -49,5 +27,3 @@
          else
              User wins
 
-ToDo:
-- Game is almost fully functioning. Only issue is it both dealer and player stay, player will not enter a game end state, and crashed due to NullPointerException. This seems to be due to the JTextFields tfWins and tfLosses suddenly becoming fully inaccessible, even if we recreate them at that very moment. We are unsure how to fix this.
